@@ -128,7 +128,7 @@ try:
         '''
     heatmap_html += '</div>'
     
-    st.markdown(heatmap_html, unsafe_allow_html=True)), language="python")
+    st.markdown(heatmap_html, unsafe_allow_html=True)
     
 except FileNotFoundError:
     st.error("Erro: Arquivo lotofacil_dados.json não encontrado.")
