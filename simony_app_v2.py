@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import random
+import itertools
 import time
 import requests
 import urllib3
@@ -97,8 +98,37 @@ try:
     col3.metric("Data da Última Coleta", f"{dados[0]['data']}")
     
     st.markdown("---")
-    st.subheader("🔥 Mapa de Calor (Top 21 Números)")
-    st.code(str(sorted(numeros_quentes)), language="python")
+    st.markdown("---")
+    st.subheader("🔥 Mapa de Calor do Volante (1 a 25)")
+    
+    max_f = max(frequencia.values())
+    min_f = min(frequencia.values())
+    
+    heatmap_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 450px; margin-bottom: 30px;">'
+    for i in range(1, 26):
+        qtd = frequencia.get(i, 0)
+        # Calcula opacidade de 0.2 a 1.0 (brilho verde neon)
+        if max_f == min_f:
+            opacidade = 0.5
+        else:
+            opacidade = 0.15 + 0.85 * ((qtd - min_f) / (max_f - min_f))
+        
+        # Borda grossa nos top 15
+        top_15 = [n for n, c in frequencia.most_common(15)]
+        borda = "solid 2px #00ff00" if i in top_15 else "solid 1px #004400"
+        
+        heatmap_html += f'''
+        <div style="background-color: rgba(0, 255, 0, {opacidade:.2f}); 
+                    border: {borda}; border-radius: 8px; 
+                    padding: 10px; text-align: center; color: white;
+                    box-shadow: 0 0 10px rgba(0, 255, 0, {(opacidade/2):.2f});">
+            <b style="font-size: 20px;">{i:02d}</b><br>
+            <span style="font-size: 11px; opacity: 0.9;">{qtd}x</span>
+        </div>
+        '''
+    heatmap_html += '</div>'
+    
+    st.markdown(heatmap_html, unsafe_allow_html=True)), language="python")
     
 except FileNotFoundError:
     st.error("Erro: Arquivo lotofacil_dados.json não encontrado.")
@@ -142,3 +172,55 @@ if gerar_btn:
     for idx, jogo in enumerate(jogos_gerados, 1):
         formatado = " - ".join([str(n).zfill(2) for n in jogo])
         st.markdown(f'<div class="bilhete-box">🎫 JOGO {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
+
+st.sidebar.markdown("---")
+desdobramento_btn = st.sidebar.button("💎 DESDOBRAMENTO TOTAL (18 Dezenas)")
+st.sidebar.caption("Gera 816 combinações possíveis das 18 dezenas mais quentes e aplica os Filtros Matemáticos para extrair os Jogos de Elite.")
+
+if desdobramento_btn:
+    st.markdown("### 💎 CALCULANDO MATRIZ DE DESDOBRAMENTO (18 -> 15)")
+    with st.spinner("Desdobrando 816 combinações e aplicando filtros pesados..."):
+        # Pega as 18 mais quentes
+        as_18_mais = sorted(numeros_quentes[:18])
+        st.info(f"Dezenas escolhidas para o fechamento: {as_18_mais}")
+        
+        # Gera todas as combinações matemáticas de 15 números dentre as 18
+        todas_combinacoes = list(itertools.combinations(as_18_mais, 15))
+        
+        jogos_de_elite = []
+        descartados = 0
+        
+        for jogo in todas_combinacoes:
+            jogo = list(jogo)
+            impares = len([n for n in jogo if n % 2 != 0])
+            primos = len([n for n in jogo if n in PRIMOS])
+            fibo = len([n for n in jogo if n in FIBONACCI])
+            moldura = len([n for n in jogo if n in MOLDURA])
+            repetidas = len([n for n in jogo if n in ultimo_concurso])
+            soma = sum(jogo)
+            
+            # Passando na peneira de filtros
+            if not (impares == 7 or impares == 8): 
+                descartados += 1; continue
+            if not (4 <= primos <= 6): 
+                descartados += 1; continue
+            if not (3 <= fibo <= 5): 
+                descartados += 1; continue
+            if not (9 <= moldura <= 11): 
+                descartados += 1; continue
+            if not (8 <= repetidas <= 10): 
+                descartados += 1; continue
+            if not (180 <= soma <= 210): 
+                descartados += 1; continue
+                
+            jogos_de_elite.append(jogo)
+
+    st.success(f"Fechamento Concluído! Das 816 combinações matemáticas possíveis, os filtros descartaram {descartados} jogos com baixa probabilidade.")
+    
+    if len(jogos_de_elite) > 0:
+        st.markdown(f"### 🎯 ENCONTRADOS {len(jogos_de_elite)} JOGOS DE ELITE")
+        for idx, jogo in enumerate(jogos_de_elite, 1):
+            formatado = " - ".join([str(n).zfill(2) for n in jogo])
+            st.markdown(f'<div class="bilhete-box" style="border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);">💎 ELITE {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
+    else:
+        st.warning("Os filtros foram tão rígidos que destruíram todos os 816 jogos da matriz! Tente relaxar um pouco as regras ou gerar a força bruta padrão.")
