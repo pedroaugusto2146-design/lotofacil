@@ -117,15 +117,7 @@ try:
         top_15 = [n for n, c in frequencia.most_common(15)]
         borda = "solid 2px #00ff00" if i in top_15 else "solid 1px #004400"
         
-        heatmap_html += f'''
-        <div style="background-color: rgba(0, 255, 0, {opacidade:.2f}); 
-                    border: {borda}; border-radius: 8px; 
-                    padding: 10px; text-align: center; color: white;
-                    box-shadow: 0 0 10px rgba(0, 255, 0, {(opacidade/2):.2f});">
-            <b style="font-size: 20px;">{i:02d}</b><br>
-            <span style="font-size: 11px; opacity: 0.9;">{qtd}x</span>
-        </div>
-        '''
+        heatmap_html += f'''<div style="background-color: rgba(0, 255, 0, {opacidade:.2f}); border: {borda}; border-radius: 8px; padding: 10px; text-align: center; color: white; box-shadow: 0 0 10px rgba(0, 255, 0, {(opacidade/2):.2f});"><b style="font-size: 20px;">{i:02d}</b><br><span style="font-size: 11px; opacity: 0.9;">{qtd}x</span></div>''' 
     heatmap_html += '</div>'
     
     st.markdown(heatmap_html, unsafe_allow_html=True)
