@@ -104,20 +104,26 @@ try:
     max_f = max(frequencia.values())
     min_f = min(frequencia.values())
     
-    heatmap_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 450px; margin-bottom: 30px;">'
+heatmap_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 450px; margin-bottom: 30px;">'
     for i in range(1, 26):
         qtd = frequencia.get(i, 0)
-        # Calcula opacidade de 0.2 a 1.0 (brilho verde neon)
-        if max_f == min_f:
-            opacidade = 0.5
+        p = 0 if max_f == min_f else (qtd - min_f) / (max_f - min_f)
+        
+        # Escala Verde -> Amarelo -> Vermelho
+        if p < 0.5:
+            r = int((p / 0.5) * 255)
+            g = 255
         else:
-            opacidade = 0.15 + 0.85 * ((qtd - min_f) / (max_f - min_f))
+            r = 255
+            g = int((1.0 - p) / 0.5 * 255)
+            
+        cor_rgb = f"{r}, {g}, 0"
         
-        # Borda grossa nos top 15
+        # Borda e fonte
         top_15 = [n for n, c in frequencia.most_common(15)]
-        borda = "solid 2px #00ff00" if i in top_15 else "solid 1px #004400"
+        borda = f"solid 2px rgb({cor_rgb})" if i in top_15 else "solid 1px #444"
         
-        heatmap_html += f'''<div style="background-color: rgba(0, 255, 0, {opacidade:.2f}); border: {borda}; border-radius: 8px; padding: 10px; text-align: center; color: white; box-shadow: 0 0 10px rgba(0, 255, 0, {(opacidade/2):.2f});"><b style="font-size: 20px;">{i:02d}</b><br><span style="font-size: 11px; opacity: 0.9;">{qtd}x</span></div>''' 
+        heatmap_html += f'''<div style="background-color: rgba({cor_rgb}, 0.75); border: {borda}; border-radius: 8px; padding: 10px; text-align: center; color: white; box-shadow: 0 0 10px rgba({cor_rgb}, 0.5);"><b style="font-size: 20px; text-shadow: 1px 1px 2px black;">{i:02d}</b><br><span style="font-size: 11px; opacity: 0.9; text-shadow: 1px 1px 1px black;">{qtd}x</span></div>'''
     heatmap_html += '</div>'
     
     st.markdown(heatmap_html, unsafe_allow_html=True)
