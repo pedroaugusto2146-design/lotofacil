@@ -104,7 +104,7 @@ try:
     max_f = max(frequencia.values())
     min_f = min(frequencia.values())
     
-heatmap_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 450px; margin-bottom: 30px;">'
+    heatmap_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 450px; margin-bottom: 30px;">'
     for i in range(1, 26):
         qtd = frequencia.get(i, 0)
         p = 0 if max_f == min_f else (qtd - min_f) / (max_f - min_f)
