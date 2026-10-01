@@ -161,6 +161,16 @@ if gerar_btn:
             if not (8 <= repetidas <= 10): continue
             if not (180 <= soma <= 210): continue
             
+            # FILTRO 1: Matrizes (Geometria do Volante)
+            linhas = set((n - 1) // 5 for n in jogo)
+            colunas = set((n - 1) % 5 for n in jogo)
+            if len(linhas) < 5 or len(colunas) < 5: continue # Obriga 1 numero em cada linha e coluna
+            
+            # FILTRO 2: Curva de Gauss (Desvio Padrão)
+            media = soma / 15.0
+            desvio_padrao = (sum((x - media)**2 for x in jogo) / 15.0) ** 0.5
+            if not (6.5 <= desvio_padrao <= 7.8): continue # Fora do Sino de Gauss
+            
             jogo.sort()
             if jogo not in jogos_gerados:
                 jogos_gerados.append(jogo)
@@ -210,6 +220,18 @@ if desdobramento_btn:
                 descartados += 1; continue
             if not (180 <= soma <= 210): 
                 descartados += 1; continue
+            
+            # FILTRO 1: Matrizes (Geometria do Volante)
+            linhas = set((n - 1) // 5 for n in jogo)
+            colunas = set((n - 1) % 5 for n in jogo)
+            if len(linhas) < 5 or len(colunas) < 5: 
+                descartados += 1; continue
+                
+            # FILTRO 2: Curva de Gauss (Desvio Padrão)
+            media = soma / 15.0
+            desvio_padrao = (sum((x - media)**2 for x in jogo) / 15.0) ** 0.5
+            if not (6.5 <= desvio_padrao <= 7.8): 
+                descartados += 1; continue
                 
             jogos_de_elite.append(jogo)
 
@@ -222,3 +244,54 @@ if desdobramento_btn:
             st.markdown(f'<div class="bilhete-box" style="border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);">💎 ELITE {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
     else:
         st.warning("Os filtros foram tão rígidos que destruíram todos os 816 jogos da matriz! Tente relaxar um pouco as regras ou gerar a força bruta padrão.")
+
+
+st.sidebar.markdown("---")
+caos_btn = st.sidebar.button("🦋 GERADOR DO CAOS (Borboleta)")
+st.sidebar.caption("Mantém o 'Atrator Estranho' de 9 repetidas do concurso anterior e aplica entropia caótica nas 6 dezenas restantes.")
+
+if caos_btn:
+    st.markdown("### 🦋 APLICANDO TEORIA DO CAOS NOS BILHETES")
+    with st.spinner("Batendo as asas da borboleta..."):
+        jogos_caos = []
+        tentativas = 0
+        
+        # Pega as 15 do ltimo concurso como base
+        ultimas_15 = ultimo_concurso
+        dezenas_fora = [n for n in range(1, 26) if n not in ultimas_15]
+        
+        while len(jogos_caos) < qtd_jogos:
+            tentativas += 1
+            # Mantm 9 dezenas (o Atrator Estranho)
+            atrator = random.sample(ultimas_15, 9)
+            
+            # Adiciona 6 dezenas caoticas das que no saram
+            turbulencia = random.sample(dezenas_fora, 6)
+            
+            jogo = atrator + turbulencia
+            jogo.sort()
+            
+            # Sobrevivencia ao Caos (Filtros vitais)
+            impares = len([n for n in jogo if n % 2 != 0])
+            soma = sum(jogo)
+            
+            if not (180 <= soma <= 210): continue
+            if not (7 <= impares <= 8): continue
+            
+            # FILTRO: Matrizes e Curva de Gauss (para no gerar lixo total)
+            linhas = set((n - 1) // 5 for n in jogo)
+            colunas = set((n - 1) % 5 for n in jogo)
+            if len(linhas) < 5 or len(colunas) < 5: continue
+            
+            media = soma / 15.0
+            desvio_padrao = (sum((x - media)**2 for x in jogo) / 15.0) ** 0.5
+            if not (6.5 <= desvio_padrao <= 7.8): continue
+            
+            if jogo not in jogos_caos:
+                jogos_caos.append(jogo)
+                
+    st.success(f"Anomalia processada! Foram geradas {tentativas} realidades alternativas caoticas para pescar estes jogos perfeitos.")
+    
+    for idx, jogo in enumerate(jogos_caos, 1):
+        formatado = " - ".join([str(n).zfill(2) for n in jogo])
+        st.markdown(f'<div class="bilhete-box" style="border-color: #ff00ff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);">🦋 CAOS {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
