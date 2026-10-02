@@ -295,3 +295,71 @@ if caos_btn:
     for idx, jogo in enumerate(jogos_caos, 1):
         formatado = " - ".join([str(n).zfill(2) for n in jogo])
         st.markdown(f'<div class="bilhete-box" style="border-color: #ff00ff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);">🦋 CAOS {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
+
+
+st.sidebar.markdown("---")
+eco_btn = st.sidebar.button("🎯 DESDOBRAMENTO ECONÔMICO (10 Jogos)")
+st.sidebar.caption("Gera a matriz de Elite de 18 dezenas, e pesca as 10 melhores para você jogar sem ir à falência.")
+
+if eco_btn:
+    st.markdown("### 🎯 EXTRAINDO 10 APOSTAS DO DESDOBRAMENTO DE ELITE")
+    with st.spinner("Desdobrando 816 combinações, filtrando o lixo e peneirando as 10 de ouro..."):
+        # Pega as 18 mais quentes
+        as_18_mais = sorted(numeros_quentes[:18])
+        st.info(f"Dezenas base do fechamento: {as_18_mais}")
+        
+        # Gera matriz
+        todas_combinacoes = list(itertools.combinations(as_18_mais, 15))
+        
+        jogos_de_elite = []
+        descartados = 0
+        
+        for jogo in todas_combinacoes:
+            jogo = list(jogo)
+            impares = len([n for n in jogo if n % 2 != 0])
+            primos = len([n for n in jogo if n in PRIMOS])
+            fibo = len([n for n in jogo if n in FIBONACCI])
+            moldura = len([n for n in jogo if n in MOLDURA])
+            repetidas = len([n for n in jogo if n in ultimo_concurso])
+            soma = sum(jogo)
+            
+            if not (180 <= soma <= 210): 
+                descartados += 1; continue
+            
+            # FILTRO 1: Matrizes
+            linhas = set((n - 1) // 5 for n in jogo)
+            colunas = set((n - 1) % 5 for n in jogo)
+            if len(linhas) < 5 or len(colunas) < 5: 
+                descartados += 1; continue
+                
+            # FILTRO 2: Curva de Gauss
+            media = soma / 15.0
+            desvio_padrao = (sum((x - media)**2 for x in jogo) / 15.0) ** 0.5
+            if not (6.5 <= desvio_padrao <= 7.8): 
+                descartados += 1; continue
+                
+            if not (impares == 7 or impares == 8): 
+                descartados += 1; continue
+            if not (4 <= primos <= 6): 
+                descartados += 1; continue
+            if not (3 <= fibo <= 5): 
+                descartados += 1; continue
+            if not (9 <= moldura <= 11): 
+                descartados += 1; continue
+            if not (8 <= repetidas <= 10): 
+                descartados += 1; continue
+                
+            jogos_de_elite.append(jogo)
+
+    if len(jogos_de_elite) > 0:
+        # AQUI TA A MAGICA DA ECONOMIA: Pega só 10 dos cento e tantos!
+        qtd_extrair = min(10, len(jogos_de_elite))
+        jogos_sorteados_eco = random.sample(jogos_de_elite, qtd_extrair)
+        
+        st.success(f"A matriz total gerou {len(jogos_de_elite)} bilhetes de elite (Descartou {descartados} lixos matemáticos). Foram pescados apenas os {qtd_extrair} jogos sorteados para você jogar barato.")
+        st.markdown(f"### 🎯 AS {qtd_extrair} APOSTAS DE ELITE (ECONÔMICO)")
+        for idx, jogo in enumerate(jogos_sorteados_eco, 1):
+            formatado = " - ".join([str(n).zfill(2) for n in jogo])
+            st.markdown(f'<div class="bilhete-box" style="border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);">🎯 APOSTA {idx:02d} | <b>{formatado}</b></div>', unsafe_allow_html=True)
+    else:
+        st.warning("Filtros destruíram todos os jogos. Tente rodar de novo.")
